@@ -12,7 +12,7 @@ get '/' do
     result["pairs"] = Array.new 
     pairs = client.pairs(params[:dce])
     pairs.each {|p|
-        result['pairs'] << { 'symbol' => p.base + '-' +p.target}
+        result['pairs'] << { 'symbol' => p.base + '-' +p.target }
     }
     result.to_json
 end

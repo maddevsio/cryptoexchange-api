@@ -1,36 +1,42 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'bundler/setup'
 require 'cryptoexchange'
 require 'sinatra'
+require 'logger'
 
 set :bind, '0.0.0.0'
 
+logger = Logger.new(STDOUT)
+
 get '/' do
-    client = Cryptoexchange::Client.new
-    result = Hash.new
-    result["pairs"] = Array.new 
-    pairs = client.pairs(params[:dce])
-    pairs.each {|p|
-        result['pairs'] << { 'symbol' => p.base + '-' +p.target }
-    }
+  begin
+    result = { 'pairs' => [] }
+    pairs = Cryptoexchange::Client.new.pairs(params[:dce])
+  rescue StandardError => e
+    logger.error("#{e.message} #{e.class}\n")
+  else
+    pairs.each { |p| result['pairs'] << { 'symbol' => "#{p.base}-#{p.target}" } }
     result.to_json
+  end
 end
 
 get '/ticker' do
-    client = Cryptoexchange::Client.new
-    result = Hash.new
-    result['ticker'] = Array.new
+  begin
     pair = Cryptoexchange::Models::MarketPair.new(base: params[:base], target: params[:target], market: params[:market])
-    ticker = client.ticker(pair)
-    result['ticker'] << {
-        'last' => ticker.last,
-        'bid' => ticker.bid,
-        'ask' => ticker.ask,
-        'high' => ticker.high,
-        'low' => ticker.low,
-        'change' => ticker.change,
-        'volume' => ticker.volume
-    }
-    result.to_json
-end    
+    ticker = Cryptoexchange::Client.new.ticker(pair)
+  rescue StandardError => e
+    logger.error("#{e.message} #{e.class}\n")
+  else
+    { 'ticker' => [] << {
+      'last' => ticker.last,
+      'bid' => ticker.bid,
+      'ask' => ticker.ask,
+      'high' => ticker.high,
+      'low' => ticker.low,
+      'change' => ticker.change,
+      'volume' => ticker.volume
+    } }.to_json
+  end
+end

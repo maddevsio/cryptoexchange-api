@@ -20,7 +20,7 @@ GEM
     lru_redux (1.1.0)
     mustermann (1.0.2)
     public_suffix (3.0.2)
-    rack (2.2.2)
+    rack (2.2.6.2)
     rack-protection (2.0.3)
       rack
     sinatra (2.0.3)
